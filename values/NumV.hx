@@ -1,7 +1,7 @@
 package values;
 
 class NumV extends Value{
-    var num:Float;
+    public var num:Float;
 
     public function new(num){
         super();

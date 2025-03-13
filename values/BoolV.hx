@@ -1,7 +1,7 @@
 package values;
 
 class BoolV extends Value {
-    var bool:Bool;
+    public var bool:Bool;
 
     public function new(bool){
         super();
