@@ -23,6 +23,13 @@ class Main {
 
         //interp testing
         trace(interp( new NumC(4), new Env()));
+
+        //testing applyPrimv
+        
+        var testExp = new AppC(new IdC("+"), Lambda.list([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
+        var testEnv = new Env();
+        testEnv.add("+", new PrimV("+"));
+        trace(interp(testExp, testEnv));
     }
     
 
@@ -74,8 +81,8 @@ class Main {
             var interped_args:List<Value> = args.map(arg -> interp(arg, env));
             var iter = interped_args.iterator();
 
-            if (Std.isOfType(func, CloV)) {
-                var f: CloV = cast func;
+            if (Std.isOfType(funval, CloV)) {
+                var f: CloV = cast funval;
                 var new_env = new Env();
                 var i:Int = 0;
                 var params:List<String> = cast f.args;
@@ -89,8 +96,10 @@ class Main {
                 }
                 return interp(f.body, new_env);
             } 
-            else if (Std.isOfType(func, PrimV)) {
-                return new NumV(0); // Call the primitive interp function here
+            else if (Std.isOfType(funval, PrimV)) {
+                var p: PrimV = cast funval;
+                return applyPrimV(p.op, Lambda.array(interped_args));
+                //return new NumV(0); // Call the primitive interp function here
             }
             else {
                 throw "Function is of invalid type";
@@ -105,21 +114,21 @@ class Main {
     public static function applyPrimV(op: String, vals: Array<Value>): Value {
         switch(op) {
             case "+":
-                return new NumV(vals[0].num + vals[1].num);
+                return new NumV(cast(vals[0], NumV).num + cast(vals[1], NumV).num);
             case "-":
-                return new NumV(vals[0].num - vals[1].num);
+                return new NumV(cast(vals[0], NumV).num - cast(vals[1], NumV).num);
             case "*":
-                return new NumV(vals[0].num * vals[1].num);
+                return new NumV(cast(vals[0], NumV).num * cast(vals[1], NumV).num);
             case "/":
-                return new NumV(vals[0].num / vals[1].num);
+                return new NumV(cast(vals[0], NumV).num / cast(vals[1], NumV).num);
             case "<=":
-                return new BoolV(vals[0].num <= vals[1].num);
+                return new BoolV(cast(vals[0], NumV).num <= cast(vals[1], NumV).num);
             case ">=":
-                return new BoolV(vals[0].num >= vals[1].num);
+                return new BoolV(cast(vals[0], NumV).num >= cast(vals[1], NumV).num);
             case "equal?":
-                return new BoolV(vals[0].num == vals[1].num);
+                return new BoolV(cast(vals[0], NumV).num == cast(vals[1], NumV).num);
             default:
-                throw new Exception("Invalid operator");
+                throw new Exception("Invalid operator: " + op);
         }
     }
 
