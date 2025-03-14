@@ -7,4 +7,8 @@ class PrimV extends Value {
         super();
         this.op = op;
     }
+
+    public override function toString() : String {
+        return "";
+    }
 }

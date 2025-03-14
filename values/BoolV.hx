@@ -7,4 +7,8 @@ class BoolV extends Value {
         super();
         this.bool = bool;
     }
+
+    public override function toString() : String{
+        return bool? "true": "false";
+    }
 }

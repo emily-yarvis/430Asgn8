@@ -1,7 +1,7 @@
 import values.*;
 
 class Env {
-    var bindings:Map<String, Value>;
+    public var bindings:Map<String, Value>;
 
     public function new(){
         this.bindings = []; // Make the top-level env here
@@ -11,7 +11,7 @@ class Env {
         return bindings[id];
     }
 
-    public function add(id, value) {
+    public function add(id, value:Value) {
         bindings[id] = value;
     }
 

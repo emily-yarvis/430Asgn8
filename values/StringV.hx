@@ -8,5 +8,8 @@ class StringV extends Value {
         this.str = str;
     }
 
+    public override function toString() : String {
+        return str;        
+    }
     
 }
