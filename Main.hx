@@ -14,26 +14,12 @@ class Main {
         // Single line comment
         trace("Hello World");
 
+        //create top level env
         var top_level_env: Env = createTopLevelEnv();
 
 
         //interp testing
-        
-        testInterpNumC();
-        testInterpStringC();
-        testInterpIdC();
-        testAppC();
-        testIfC();
-
-
-        //parse testing
-        testParseNum();
-        testParseString();
-
-        //testing applyPrimv
-        testAddition();
-        testSubtraction(); 
-        testLessThan();
+        runTests();
         
         var testExp = new AppC(new IdC("+"), Lambda.array([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
         var testEnv = new Env();
@@ -223,7 +209,23 @@ class Main {
     }
 
     
+    static function runTests(){
+        testInterpNumC();
+        testInterpStringC();
+        testInterpIdC();
+        testAppC();
+        testIfC();
 
+
+        //parse testing
+        testParseNum();
+        testParseString();
+
+        //testing applyPrimv
+        testAddition();
+        testSubtraction(); 
+        testLessThan();
+    }
 //Interp test cases
      // Addition
      static function testInterpNumC() {
