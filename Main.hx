@@ -102,6 +102,27 @@ class Main {
         
     }
 
+    public static function applyPrimV(op: String, vals: Array<Value>): Value {
+        switch(op) {
+            case "+":
+                return new NumV(vals[0].num + vals[1].num);
+            case "-":
+                return new NumV(vals[0].num - vals[1].num);
+            case "*":
+                return new NumV(vals[0].num * vals[1].num);
+            case "/":
+                return new NumV(vals[0].num / vals[1].num);
+            case "<=":
+                return new BoolV(vals[0].num <= vals[1].num);
+            case ">=":
+                return new BoolV(vals[0].num >= vals[1].num);
+            case "equal?":
+                return new BoolV(vals[0].num == vals[1].num);
+            default:
+                throw new Exception("Invalid operator");
+        }
+    }
+
 
     
 
