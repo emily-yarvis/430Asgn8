@@ -14,30 +14,46 @@ class Main {
         // Single line comment
         trace("Hello World");
 
-        var e = new IdC("this is my id");
-        trace(e.id);
+        var top_level_env: Env = createTopLevelEnv();
 
-        var env = new Env();
-        env.add("id", new NumV(3));
-        trace(env);
-        trace(env.lookup("id"));
 
         //interp testing
-        trace(parse(["1"]));
-        trace(interp( new NumC(4), new Env()));
+        
+        testInterpNumC();
+        testInterpStringC();
+        testInterpIdC();
+        testAppC();
+
+        //interp testing
+        // trace(parse(["1"]));
 
         //testing applyPrimv
         testAddition();
         testSubtraction(); 
         testLessThan();
         
-        var testExp = new AppC(new IdC("+"), Lambda.list([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
+        var testExp = new AppC(new IdC("+"), Lambda.array([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
         var testEnv = new Env();
         testEnv.add("+", new PrimV("+"));
         trace(interp(testExp, testEnv));
     }
-    
 
+    public static function createTopLevelEnv(): Env{
+        var env = new Env();
+        env.add("true",new BoolV(true));
+        env.add("false",new BoolV(false));
+        env.add("<=", new PrimV("<="));
+        env.add(">=",new PrimV(">="));
+        env.add("equal?", new PrimV("equal?"));
+        env.add("-",new PrimV("-"));
+        env.add("+",new PrimV("+"));
+        env.add("*",new PrimV("*"));
+        env.add("/",new PrimV("/"));
+        return env;
+    }
+
+    
+    
     
     public static function interp(expr : ExprC, env : Env ) : Value{
         if(Std.isOfType(expr, NumC)){
@@ -83,7 +99,7 @@ class Main {
             var func = a.name;
             var args = a.args;
             var funval = interp(func, env);
-            var interped_args:List<Value> = args.map(arg -> interp(arg, env));
+            var interped_args:Array<Value> = args.map(arg -> interp(arg, env));
             var iter = interped_args.iterator();
 
             if (Std.isOfType(funval, CloV)) {
@@ -115,6 +131,28 @@ class Main {
         }
         
     }
+    //Interp test cases
+     // Addition
+     static function testInterpNumC() {
+        trace("Test Interp of 4: " + interp( new NumC(4), new Env()));
+    }
+
+    static function testInterpStringC() {
+        trace("Test Interp of \"Hello\": " + interp( new StringC("Hello"), new Env()));
+    }
+
+    static function testInterpIdC() {
+        var env = createTopLevelEnv();
+        env.add("x", new NumV(3));
+        trace("Test Interp of 'x: " + interp( new IdC("x"), env));
+    }
+
+    static function testAppC(){
+        var env = createTopLevelEnv();
+        trace("Test add AppC: "+ interp(new AppC(new IdC("+"), [new NumC(3), new NumC(4)]), env));
+    }
+   
+
 
     public static function applyPrimV(op: String, vals: Array<Value>): Value {
         switch(op) {
@@ -140,7 +178,7 @@ class Main {
     //test cases:
         // Addition
         static function testAddition() {
-            var expr = new AppC(new IdC("+"), Lambda.list([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
+            var expr = new AppC(new IdC("+"), Lambda.array([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
             var env = new Env();
             env.add("+", new PrimV("+"));
             var result = interp(expr, env);
@@ -150,7 +188,7 @@ class Main {
     
         //Subtraction
         static function testSubtraction() {
-            var expr = new AppC(new IdC("-"), Lambda.list([new NumC(9), new NumC(3)]).map(x -> cast(x, ExprC)));
+            var expr = new AppC(new IdC("-"), Lambda.array([new NumC(9), new NumC(3)]).map(x -> cast(x, ExprC)));
             var env = new Env();
             env.add("-", new PrimV("-"));
             var result = interp(expr, env);
@@ -160,7 +198,7 @@ class Main {
     
         //Less than or equal to
         static function testLessThan() {
-            var expr = new AppC(new IdC("<="), Lambda.list([new NumC(1), new NumC(3)]).map(x -> cast(x, ExprC)));
+            var expr = new AppC(new IdC("<="), Lambda.array([new NumC(1), new NumC(3)]).map(x -> cast(x, ExprC)));
             var env = new Env();
             env.add("<=", new PrimV("<="));
             var result = interp(expr, env);
@@ -169,48 +207,59 @@ class Main {
         }
 
 
-    public static function parse(sexp : Sexp) : ExprC {
-        if(sexp.sexp.length != 0) {
-            if(sexp.sexp.length == 1){
-                var arr = sexp.sexp[1].split("");
+    public static function parse(s : Sexp) : ExprC {
+        var sexp : Array<Dynamic>;
+        switch (s) {
+            case StringArray(strings):
+                sexp = strings;
+            case NestedArray(nested):
+                sexp = nested;
+        }
+        if(sexp.length != 0) {
+            if(sexp.length == 1){
+                var arr = sexp[1].split("");
                 //NumC Rule
-                if(Math.isNaN(Std.parseFloat(sexp.sexp[0]))){
-                    return new NumC(Std.parseFloat(sexp.sexp[0]));
+                if(Math.isNaN(Std.parseFloat(sexp[0]))){
+                    return new NumC(Std.parseFloat(sexp[0]));
 
                 }
                 //StringC Rule
                 else if( arr[1] =="\""){
-                    var result = sexp.sexp[1].substr(1, sexp.sexp[1].length - 2);
+                    var result = sexp[1].substr(1, sexp[1].length - 2);
                     return new StringC(result);
                 }
                 //IdC Rule
                 else {
-                    return new IdC(sexp.sexp[1]);
+                    return new IdC(sexp[1]);
                 }
             }
             //IfC Rule
-            else if (sexp.sexp.length == 4 && sexp.sexp[0] == 'if') {
-                return new IfC(parse(sexp.sexp[1]), parse(sexp.sexp[2]), parse(sexp.sexp[3]));
+            else if (sexp.length == 4 && sexp[0] == 'if') {
+                return new IfC(parse(sexp[1]), parse(sexp[2]), parse(sexp[3]));
             }
             //LamC Rule
-            else if (sexp.sexp.length == 3 && sexp.sexp[0] == 'proc' && sexp.sexp[1].isOfType(Array) && sexp.sexp[1].every(function(item) return Std.isOfType(item, String))) {
-                return new LamC(sexp.sexp[1], parse(sexp.sexp[2]));
+            else if (sexp.length == 3 && sexp[0] == 'proc' && sexp[1].isOfType(Array) && sexp[1].every(function(item) return Std.isOfType(item, String))) {
+                return new LamC(sexp[1], parse(sexp[2]));
             }
-            //Declare Rule
-            else if (sexp.sexp.length == 4 && sexp.sexp[0] == 'declare' && sexp.sexp[1].isOfType(Array) && sexp.sexp[1].every(function(item) return Std.isOfType(item, Array) && item.length == 3) && sexp.sexp[2] == 'in') {
-                var variables : Array<String> = [];
-                var values : Array<String> = [];
-                for (item in sexp.sexp[1]) {
-                    variables.push(item[0]);
-                    values.push(item[1]);
-                }
-                return new AppC(new LamC(variables, parse(sexp.sexp[3])), values.map(val -> parse(val)));
-            }
+            //Declare Rule (skipped for now)
+            // else if (sexp.length == 4 && sexp[0] == 'declare' && 
+            //     sexp[1].isOfType(Array) && 
+            //     sexp[1].every(function(item) return Std.isOfType(item, Array) && item.length == 3) &&
+            //     sexp[2] == 'in') {
+            //     var variables : List<String> = new List<String>();
+            //     var values : Array<Sexp> = [];
+            //     var first : Array<Array<String>> = cast sexp[1];
+            //     for (item in first) {
+            //         variables.push(item[0]);
+            //         values.push(item[1]);
+            //     }
+            //     return new AppC(new LamC(variables, parse(sexp[3])), values.map(val -> parse(val)));
+            // }
             //AppC Rule
             else{
-                var first = sexp.sexp[0];
-                sexp.sexp.shift();
-                return new AppC (parse(first), sexp.sexp.map(arg -> parse(arg)));
+                var first = sexp[0];
+                sexp.shift();
+                return new AppC(parse(first), sexp.map(arg -> parse(arg)));
             }
             
         }
