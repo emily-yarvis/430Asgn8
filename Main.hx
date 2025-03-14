@@ -25,6 +25,9 @@ class Main {
         trace(interp( new NumC(4), new Env()));
 
         //testing applyPrimv
+        testAddition();
+        testSubtraction(); 
+        testLessThan();
         
         var testExp = new AppC(new IdC("+"), Lambda.list([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
         var testEnv = new Env();
@@ -131,6 +134,37 @@ class Main {
                 throw new Exception("Invalid operator: " + op);
         }
     }
+
+    //test cases:
+        // Addition
+        static function testAddition() {
+            var expr = new AppC(new IdC("+"), Lambda.list([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
+            var env = new Env();
+            env.add("+", new PrimV("+"));
+            var result = interp(expr, env);
+            trace("Test Addition Result: " + result);
+            // Expected: NumV(7)
+        }
+    
+        //Subtraction
+        static function testSubtraction() {
+            var expr = new AppC(new IdC("-"), Lambda.list([new NumC(9), new NumC(3)]).map(x -> cast(x, ExprC)));
+            var env = new Env();
+            env.add("-", new PrimV("-"));
+            var result = interp(expr, env);
+            trace("Test Subtraction Result: " + result);
+            // Expected: NumV(6)
+        }
+    
+        //Less than or equal to
+        static function testLessThan() {
+            var expr = new AppC(new IdC("<="), Lambda.list([new NumC(1), new NumC(3)]).map(x -> cast(x, ExprC)));
+            var env = new Env();
+            env.add("<=", new PrimV("<="));
+            var result = interp(expr, env);
+            trace("Test Comparison Result: " + result);
+            // Expected: BoolV(true)
+        }
 
 
     
