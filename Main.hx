@@ -2,6 +2,7 @@
     Multi-line comments for documentation.
 **/
 
+import sexpressions.Sexp;
 import haxe.Exception;
 import haxe.ds.EnumValueMap;
 import values.*;
@@ -22,6 +23,7 @@ class Main {
         trace(env.lookup("id"));
 
         //interp testing
+        trace(parse(["1"]));
         trace(interp( new NumC(4), new Env()));
     }
     
@@ -103,6 +105,53 @@ class Main {
     }
 
 
-    
+    public static function parse(sexp : Sexp) : ExprC {
+        if(sexp.sexp.length != 0) {
+            if(sexp.sexp.length == 1){
+                var arr = sexp.sexp[1].split("");
+                //NumC Rule
+                if(Math.isNaN(Std.parseFloat(sexp.sexp[0]))){
+                    return new NumC(Std.parseFloat(sexp.sexp[0]));
 
+                }
+                //StringC Rule
+                else if( arr[1] =="\""){
+                    var result = sexp.sexp[1].substr(1, sexp.sexp[1].length - 2);
+                    return new StringC(result);
+                }
+                //IdC Rule
+                else {
+                    return new IdC(sexp.sexp[1]);
+                }
+            }
+            //IfC Rule
+            else if (sexp.sexp.length == 4 && sexp.sexp[0] == 'if') {
+                return new IfC(parse(sexp.sexp[1]), parse(sexp.sexp[2]), parse(sexp.sexp[3]));
+            }
+            //LamC Rule
+            else if (sexp.sexp.length == 3 && sexp.sexp[0] == 'proc' && sexp.sexp[1].isOfType(Array) && sexp.sexp[1].every(function(item) return Std.isOfType(item, String))) {
+                return new LamC(sexp.sexp[1], parse(sexp.sexp[2]));
+            }
+            //Declare Rule
+            else if (sexp.sexp.length == 4 && sexp.sexp[0] == 'declare' && sexp.sexp[1].isOfType(Array) && sexp.sexp[1].every(function(item) return Std.isOfType(item, Array) && item.length == 3) && sexp.sexp[2] == 'in') {
+                var variables : Array<String> = [];
+                var values : Array<String> = [];
+                for (item in sexp.sexp[1]) {
+                    variables.push(item[0]);
+                    values.push(item[1]);
+                }
+                return new AppC(new LamC(variables, parse(sexp.sexp[3])), values.map(val -> parse(val)));
+            }
+            //AppC Rule
+            else{
+                var first = sexp.sexp[0];
+                sexp.sexp.shift();
+                return new AppC (parse(first), sexp.sexp.map(arg -> parse(arg)));
+            }
+            
+        }
+        else{
+            throw new Exception("Can't have Sexp of length 0");
+        }
+    }
 }
