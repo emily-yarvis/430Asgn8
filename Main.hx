@@ -23,9 +23,12 @@ class Main {
         testInterpStringC();
         testInterpIdC();
         testAppC();
+        testIfC();
 
-        //interp testing
-        // trace(parse(["1"]));
+
+        //parse testing
+        testParseNum();
+        testParseString();
 
         //testing applyPrimv
         testAddition();
@@ -131,26 +134,7 @@ class Main {
         }
         
     }
-    //Interp test cases
-     // Addition
-     static function testInterpNumC() {
-        trace("Test Interp of 4: " + interp( new NumC(4), new Env()));
-    }
-
-    static function testInterpStringC() {
-        trace("Test Interp of \"Hello\": " + interp( new StringC("Hello"), new Env()));
-    }
-
-    static function testInterpIdC() {
-        var env = createTopLevelEnv();
-        env.add("x", new NumV(3));
-        trace("Test Interp of 'x: " + interp( new IdC("x"), env));
-    }
-
-    static function testAppC(){
-        var env = createTopLevelEnv();
-        trace("Test add AppC: "+ interp(new AppC(new IdC("+"), [new NumC(3), new NumC(4)]), env));
-    }
+    
    
 
 
@@ -175,36 +159,7 @@ class Main {
         }
     }
 
-    //test cases:
-        // Addition
-        static function testAddition() {
-            var expr = new AppC(new IdC("+"), Lambda.array([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
-            var env = new Env();
-            env.add("+", new PrimV("+"));
-            var result = interp(expr, env);
-            trace("Test Addition Result: " + result);
-            // Expected: NumV(7)
-        }
-    
-        //Subtraction
-        static function testSubtraction() {
-            var expr = new AppC(new IdC("-"), Lambda.array([new NumC(9), new NumC(3)]).map(x -> cast(x, ExprC)));
-            var env = new Env();
-            env.add("-", new PrimV("-"));
-            var result = interp(expr, env);
-            trace("Test Subtraction Result: " + result);
-            // Expected: NumV(6)
-        }
-    
-        //Less than or equal to
-        static function testLessThan() {
-            var expr = new AppC(new IdC("<="), Lambda.array([new NumC(1), new NumC(3)]).map(x -> cast(x, ExprC)));
-            var env = new Env();
-            env.add("<=", new PrimV("<="));
-            var result = interp(expr, env);
-            trace("Test Comparison Result: " + result);
-            // Expected: BoolV(true)
-        }
+        
 
 
     public static function parse(s : Sexp) : ExprC {
@@ -216,15 +171,14 @@ class Main {
                 sexp = nested;
         }
         if(sexp.length != 0) {
-            if(sexp.length == 1){
-                var arr = sexp[1].split("");
+            if(sexp.length == 1) {
+                var arr = sexp[0].split("");
                 //NumC Rule
-                if(Math.isNaN(Std.parseFloat(sexp[0]))){
+                if(!Math.isNaN(Std.parseFloat(sexp[0]))){
                     return new NumC(Std.parseFloat(sexp[0]));
-
                 }
                 //StringC Rule
-                else if( arr[1] =="\""){
+                else if(arr[1] =="\""){
                     var result = sexp[1].substr(1, sexp[1].length - 2);
                     return new StringC(result);
                 }
@@ -267,4 +221,76 @@ class Main {
             throw new Exception("Can't have Sexp of length 0");
         }
     }
+
+    
+
+//Interp test cases
+     // Addition
+     static function testInterpNumC() {
+        trace("Test Interp of 4: " + interp( new NumC(4), new Env()));
+    }
+
+    static function testInterpStringC() {
+        trace("Test Interp of \"Hello\": " + interp( new StringC("Hello"), new Env()));
+    }
+
+    static function testInterpIdC() {
+        var env = createTopLevelEnv();
+        env.add("x", new NumV(3));
+        trace("Test Interp of 'x: " + interp( new IdC("x"), env));
+    }
+
+    static function testAppC(){
+        var env = createTopLevelEnv();
+        trace("Test add AppC: "+ interp(new AppC(new IdC("+"), [new NumC(3), new NumC(4)]), env));
+    }
+
+    static function testIfC(){
+        var env = createTopLevelEnv();
+        var appc:ExprC = new AppC(new IdC("equal?"), [new NumC(3), new NumC(3)]);
+        trace("Test ifC: "+ (interp(new IfC(appc, new StringC("Yay"), new StringC("Booo")), env)));
+
+    }
+
+    // Addition
+    static function testAddition() {
+        var expr = new AppC(new IdC("+"), Lambda.array([new NumC(3), new NumC(4)]).map(x -> cast(x, ExprC)));
+        var env = new Env();
+        env.add("+", new PrimV("+"));
+        var result = interp(expr, env);
+        trace("Test Addition Result: " + result);
+        // Expected: NumV(7)
+    }
+
+    //Subtraction
+    static function testSubtraction() {
+        var expr = new AppC(new IdC("-"), Lambda.array([new NumC(9), new NumC(3)]).map(x -> cast(x, ExprC)));
+        var env = new Env();
+        env.add("-", new PrimV("-"));
+        var result = interp(expr, env);
+        trace("Test Subtraction Result: " + result);
+        // Expected: NumV(6)
+    }
+
+    //Less than or equal to
+    static function testLessThan() {
+        var expr = new AppC(new IdC("<="), Lambda.array([new NumC(1), new NumC(3)]).map(x -> cast(x, ExprC)));
+        var env = new Env();
+        env.add("<=", new PrimV("<="));
+        var result = interp(expr, env);
+        trace("Test Comparison Result: " + result);
+        // Expected: BoolV(true)
+    }
+
+
+    //parse tests
+    static function testParseNum(){
+        trace("Test parse 4: "+ parse(StringArray(["4"])));
+
+    }
+    static function testParseString(){
+        trace("Test parse Hello: "+ parse(StringArray(["Hello"])));
+    }
+
+    
 }
