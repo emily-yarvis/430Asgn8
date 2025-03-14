@@ -158,14 +158,14 @@ class Main {
         }
         if(sexp.length != 0) {
             if(sexp.length == 1) {
-                var arr = sexp[0].split("");
+                var arr:Array<String> = sexp[0].split("");
                 //NumC Rule
                 if(!Math.isNaN(Std.parseFloat(sexp[0]))){
                     return new NumC(Std.parseFloat(sexp[0]));
                 }
                 //StringC Rule
-                else if(arr[1] =="\""){
-                    var result = sexp[1].substr(1, sexp[1].length - 2);
+                else if(arr[0] == "\""){
+                    var result = sexp[0].substr(1, sexp[0].length - 2);
                     return new StringC(result);
                 }
                 //IdC Rule
@@ -213,13 +213,14 @@ class Main {
         testInterpNumC();
         testInterpStringC();
         testInterpIdC();
-        testAppC();
-        testIfC();
+        testInterpAppC();
+        testInterpIfC();
 
 
         //parse testing
         testParseNum();
         testParseString();
+        testParseIdC();
 
         //testing applyPrimv
         testAddition();
@@ -242,12 +243,12 @@ class Main {
         trace("Test Interp of 'x: " + interp( new IdC("x"), env));
     }
 
-    static function testAppC(){
+    static function testInterpAppC(){
         var env = createTopLevelEnv();
         trace("Test add AppC: "+ interp(new AppC(new IdC("+"), [new NumC(3), new NumC(4)]), env));
     }
 
-    static function testIfC(){
+    static function testInterpIfC(){
         var env = createTopLevelEnv();
         var appc:ExprC = new AppC(new IdC("equal?"), [new NumC(3), new NumC(3)]);
         trace("Test ifC: "+ (interp(new IfC(appc, new StringC("Yay"), new StringC("Booo")), env)));
@@ -288,11 +289,18 @@ class Main {
     //parse tests
     static function testParseNum(){
         trace("Test parse 4: "+ parse(StringArray(["4"])));
+        //Expected: NumC
 
     }
     static function testParseString(){
-        trace("Test parse Hello: "+ parse(StringArray(["Hello"])));
+        trace("Test parse Hello: "+ parse(StringArray(["\"Hello\""])));
+        //Expected: StringC
+
     }
 
+    static function testParseIdC(){
+        trace("Test parse x: "+ parse(StringArray(["x"])));
+        //Expected: IdC
+    }
     
 }
